@@ -9,7 +9,7 @@
 using namespace std;
 
 int main() {
-    TiXmlDocument doc("/PathPlanning/pathplanning/example.xml");
+    TiXmlDocument doc("/PathPlanning/example.xml");
     if (!doc.LoadFile()) {
         cout << "Load failed" << endl;
         return 0;
@@ -20,6 +20,6 @@ int main() {
         it = it->NextSibling();
     }
     doc.RootElement()->RemoveChild(doc.RootElement()->FirstChild());
-    doc.SaveFile("/PathPlanning/pathplanning/example_new.xml"); //"map" section is deleted
+    doc.SaveFile("/PathPlanning/example_new.xml"); //"map" section is deleted
     return 0;
 }
