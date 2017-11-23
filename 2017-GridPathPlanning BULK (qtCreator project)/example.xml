@@ -47,14 +47,7 @@
     </algorithm>
     <options>
         <loglevel>1</loglevel>
-        <logpath/>
-        <logfilename/>
+        <logpath />
+        <logfilename />
     </options>
-    <log>
-        <mapfilename>../pathplanning/example.xml</mapfilename>
-        <summary numberofsteps="0" nodescreated="0" length="0" length_scaled="0" time="0.000000"/>
-        <path>Path NOT found!</path>
-        <lplevel/>
-        <hplevel/>
-    </log>
 </root>

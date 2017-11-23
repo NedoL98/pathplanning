@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    TiXmlDocument doc("../pathplanning/example.xml");
+    TiXmlDocument doc("example.xml");
     if (!doc.LoadFile()) {
         cout << "Load failed" << endl;
         return 0;

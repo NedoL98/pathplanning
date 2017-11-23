@@ -16,3 +16,7 @@ SOURCES += pathplanning.cpp \
 HEADERS += \
     tinystr.h \
     tinyxml.h
+
+DISTFILES += \
+    example.xml \
+    example_log.xml
