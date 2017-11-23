@@ -15,6 +15,6 @@ int main() {
         it = it->NextSibling();
     }
     doc.RootElement()->RemoveChild(doc.RootElement()->FirstChild());
-    doc.SaveFile("../pathplanning/example_new.xml"); //"map" section is deleted
+    doc.SaveFile("example_new.xml"); //"map" section is deleted
     return 0;
 }
