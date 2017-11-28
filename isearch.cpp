@@ -1,4 +1,5 @@
 #include "isearch.h"
+#include <map>
 #include <set>
 #include <time.h>
 
@@ -54,6 +55,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     std::vector<std::pair<int, int>> visited;
     std::multiset<std::pair<int, int>, decltype(compareByDistance)> current_queue(compareByDistance);
+    std::map<std::pair<int, int>, std::pair<int, int>> ancestor;
 
     distance[map.getStartingPoint().first][map.getStartingPoint().second] = 0;
     current_queue.insert(map.getStartingPoint());
@@ -94,11 +96,29 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
                         current_queue.erase({v.first + dx, v.second + dy});
                         distance[v.first + dx][v.second + dy] = distance[v.first][v.second] + 1;
                         current_queue.insert({v.first + dx, v.second + dy});
+
+                        ancestor[{v.first + dx, v.second + dy}] = v;
                     }
                 }
             }
         }
     }
+
+    if (distance[map.getGoalPoint().first][map.getGoalPoint().second] != -1) //Restoring the path
+    {
+        std::pair<int, int> current_vertex = {map.getGoalPoint().first, map.getGoalPoint().second};
+        while (current_vertex.first != map.getStartingPoint().first or
+               current_vertex.second != map.getStartingPoint().second)
+        {
+            lppath.push_front(Node(current_vertex.first, current_vertex.second));
+            current_vertex = ancestor[current_vertex];
+        }
+        lppath.push_front(Node(current_vertex.first, current_vertex.second));
+    }
+
+    //No need to find lpath, because it's the same as hpath
+
+    // std::cout << hppath.size() << std::endl;
 
     clock_t time_finish = clock();
 

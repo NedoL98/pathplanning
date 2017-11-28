@@ -21,5 +21,11 @@ struct Node
     bool operator== (const Node &other) const {
         return i == other.i && j == other.j;
     }
+
+    Node (int x, int y)
+    {
+        i = x;
+        j = y;
+    }
 };
 #endif
