@@ -2,6 +2,7 @@
 #include <map>
 #include <set>
 #include <time.h>
+#include <utility>
 
 const double EPS = 1e-7;
 
@@ -93,16 +94,6 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         lppath.push_front(*curNode_ptr);
         while (*curNode_ptr != startingNode) {
             --curNode_ptr;
-
-            // std::cout << curNode_ptr->i << " " << curNode_ptr->j << std::endl;
-            /*
-            if (l_diff(lppath.back().i - curNode_ptr->i, lppath.back().j - curNode_ptr->j) <= 2) {
-                std::cout << curNode_ptr->g << std::endl;
-                std::cout << l_diff(lppath.back().i - curNode_ptr->i, lppath.back().j - curNode_ptr->j) << std::endl;
-                std::cout << lppath.back().g << std::endl;
-                std::cout << std::endl;
-            }
-            */
             if (fabs(curNode_ptr->g + l_diff(lppath.back().i - curNode_ptr->i,
                                              lppath.back().j - curNode_ptr->j) - lppath.back().g) < EPS) {
                 lppath.push_back(*curNode_ptr);
@@ -111,13 +102,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     }
 
 
-    //No need to find lpath, because it's the same as hpath
-
-    // std::cout << hppath.size() << std::endl;
+    //Making secondary path
+    makeSecondaryPath();
 
     clock_t time_finish = clock();
-
-    // std::cout << distance[map.getGoalPoint().first][map.getGoalPoint().second] << std::endl;
 
     sresult.pathfound = (curNode_ptr != closed.end());
     sresult.nodescreated = closed.size() + open.size();
@@ -161,8 +149,7 @@ double l_diff(double dx, double dy) {
     return sqrt(dx * dx + dy * dy);
 }
 
-std::list<Node> ISearch::findSuccessors(Node &curNode, const Map &map, const EnvironmentOptions &options)
-{
+std::list<Node> ISearch::findSuccessors(Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
@@ -179,7 +166,27 @@ std::list<Node> ISearch::findSuccessors(Node &curNode, const Map &map, const Env
     //need to implement
 }*/
 
-/*void ISearch::makeSecondaryPath()
+std::pair<int, int> getDifference(Node &curNode, Node &nextNode) {
+    return {nextNode.i - curNode.i, nextNode.j - curNode.j};
+}
+
+void ISearch::makeSecondaryPath()
 {
-    //need to implement
-}*/
+    auto nodePtr = lppath.begin();
+    std::pair<int, int> previousDifference({0, 0}); //Probably better to make a bool flag
+
+    while (nodePtr != lppath.end()) {
+        auto nextPtr = nodePtr;
+        ++nextPtr; //Not really a good codestyle either
+        if (nextPtr == lppath.end()) {
+            hppath.push_front(*nodePtr);
+        } else {
+            auto newDifference = getDifference(*nodePtr, *nextPtr);
+            if (previousDifference != newDifference) {
+                hppath.push_front(*nodePtr);
+                previousDifference = newDifference;
+            }
+        }
+        ++nodePtr;
+    }
+}

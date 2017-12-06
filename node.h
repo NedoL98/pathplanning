@@ -24,6 +24,11 @@ struct Node
         i = x;
         j = y;
         g = dist;
+        /*
+        if (ancestor != nullptr) {
+            std::cout << ancestor->i << " " << ancestor->j << std::endl;
+        }
+        */
         parent = ancestor;
     }
 
