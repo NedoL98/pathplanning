@@ -16,11 +16,10 @@ ISearch::~ISearch(void) {}
 
 double l_diff(double dx, double dy);
 
-SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options)
-{
+SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
     clock_t time_start = clock();
 
-    //Lambda-function as a std::set comparator
+    //Lambda-functions as a comparator
     auto compareByCell = [](Node v1, Node v2) {
         if (v1.i != v2.i) {
             return v1.i < v2.i;
@@ -69,7 +68,9 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
             break;
         }
 
-        auto successors = findSuccessors(curNode, map, options);
+        //It's sufficient to take the one from ''distance'' structure
+        //Because otherwise the element will be deleted
+        auto successors = findSuccessors(*distance.find(curNode), map, options);
 
         for (auto nextNode : successors) { //Inserting new nodes
             //If it's not visited yet or if new distance is better
@@ -84,30 +85,17 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         }
     }
 
-    std::cout << "Search finished!" << std::endl;
-    //Restoring the path
-    auto curNode_ptr = closed.begin();
-    while (curNode_ptr != closed.end() and *curNode_ptr != goalNode) {
-        ++curNode_ptr;
+    //Making primary path
+    if (distance.find(goalNode) != distance.end()) {
+        makePrimaryPath(*distance.find(goalNode));
     }
-    if (curNode_ptr != closed.end()) {
-        lppath.push_front(*curNode_ptr);
-        while (*curNode_ptr != startingNode) {
-            --curNode_ptr;
-            if (fabs(curNode_ptr->g + l_diff(lppath.back().i - curNode_ptr->i,
-                                             lppath.back().j - curNode_ptr->j) - lppath.back().g) < EPS) {
-                lppath.push_back(*curNode_ptr);
-            }
-        }
-    }
-
 
     //Making secondary path
     makeSecondaryPath();
 
     clock_t time_finish = clock();
 
-    sresult.pathfound = (curNode_ptr != closed.end());
+    sresult.pathfound = (distance.find(goalNode) != distance.end());
     sresult.nodescreated = closed.size() + open.size();
     sresult.numberofsteps = step_counter;
     sresult.time = static_cast<double>(time_finish) - static_cast<double>(time_start);
@@ -116,8 +104,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     return sresult;
 }
 
-bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options)
-{
+bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
     if (dx == 0 and dy == 0) //Zero movement case
     {
         return false;
@@ -149,29 +136,35 @@ double l_diff(double dx, double dy) {
     return sqrt(dx * dx + dy * dy);
 }
 
-std::list<Node> ISearch::findSuccessors(Node &curNode, const Map &map, const EnvironmentOptions &options) {
+std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
             if (check(curNode.i, curNode.j, dx, dy, map, options)) {
-                successors.push_back(Node(curNode.i + dx, curNode.j + dy, curNode.g + l_diff(dx, dy)));
+                successors.push_back(Node(curNode.i + dx, curNode.j + dy,
+                                          curNode.g + l_diff(dx, dy), &curNode));
             }
         }
     }
     return successors;
 }
 
-/*void ISearch::makePrimaryPath(Node curNode)
-{
-    //need to implement
-}*/
+void ISearch::makePrimaryPath(Node curNode) {
+    while (true) {
+        lppath.push_back(curNode);
+        if (curNode.parent != nullptr) {
+            curNode = *curNode.parent;
+        } else {
+            break;
+        }
+    }
+}
 
 std::pair<int, int> getDifference(Node &curNode, Node &nextNode) {
     return {nextNode.i - curNode.i, nextNode.j - curNode.j};
 }
 
-void ISearch::makeSecondaryPath()
-{
+void ISearch::makeSecondaryPath() {
     auto nodePtr = lppath.begin();
     std::pair<int, int> previousDifference({0, 0}); //Probably better to make a bool flag
 
