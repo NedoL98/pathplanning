@@ -35,15 +35,12 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     };
 
     std::multiset<Node, decltype(compareByDistance)> open(compareByDistance);
-    std::multiset<Node, decltype(compareByDistance)> closed(compareByDistance);
-
-    std::set<Node, decltype(compareByCell)> distance(compareByCell); //Only visited nodes are stored here
+    std::multiset<Node, decltype(compareByCell)> closed(compareByCell);
 
     Node goalNode = Node(map.getGoalPoint().first, map.getGoalPoint().second);
     Node startingNode = Node(map.getStartingPoint().first, map.getStartingPoint().second);
 
     open.insert(startingNode);
-    distance.insert(startingNode);
 
     int step_counter = 0;
 
@@ -60,7 +57,16 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         std::cout << curNode.g << std::endl;
         */
         open.erase(open.begin()); //Erase it from queue
+
+        if (closed.count(curNode)) { //If already visited
+            continue;
+        }
+
         closed.insert(curNode); //Mark it as a visited vertex
+
+        //Pointer to an ancestor
+        auto curNode_ptr = closed.find(curNode);
+        const Node *ancestor_ptr = &(*curNode_ptr);
 
         if (curNode.i == map.getGoalPoint().first and
             curNode.j == map.getGoalPoint().second) //Goalpoint reached
@@ -70,24 +76,21 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
         //It's sufficient to take the one from ''distance'' structure
         //Because otherwise the element will be deleted
-        auto successors = findSuccessors(*distance.find(curNode), map, options);
+        auto successors = findSuccessors(*curNode_ptr, map, options);
 
         for (auto nextNode : successors) { //Inserting new nodes
             //If it's not visited yet or if new distance is better
-            auto it = distance.find(nextNode);
-            if (it == distance.end() or it->g > nextNode.g) {
-                if (it != distance.end()) {
-                    open.erase(*it); //We should delete this, because distance may be updated
-                }
+            nextNode.parent = ancestor_ptr;
+
+            if (!closed.count(nextNode)) {
                 open.insert(nextNode);
-                distance.insert(nextNode); //No need to delete this, because compared by cell only, g- doesn't matter
             }
         }
     }
 
     //Making primary path
-    if (distance.find(goalNode) != distance.end()) {
-        makePrimaryPath(*distance.find(goalNode));
+    if (closed.count(goalNode)) {
+        makePrimaryPath(*closed.find(goalNode));
     }
 
     //Making secondary path
@@ -95,7 +98,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     clock_t time_finish = clock();
 
-    sresult.pathfound = (distance.find(goalNode) != distance.end());
+    sresult.pathfound = (closed.count(goalNode));
+    if (sresult.pathfound) {
+        sresult.pathlength = closed.find(goalNode)->g;
+    }
     sresult.nodescreated = closed.size() + open.size();
     sresult.numberofsteps = step_counter;
     sresult.time = static_cast<double>(time_finish) - static_cast<double>(time_start);
@@ -142,7 +148,7 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
         for (int dy = -1; dy <= 1; ++dy) {
             if (check(curNode.i, curNode.j, dx, dy, map, options)) {
                 successors.push_back(Node(curNode.i + dx, curNode.j + dy,
-                                          curNode.g + l_diff(dx, dy), &curNode));
+                                          curNode.g + l_diff(dx, dy)));
             }
         }
     }
