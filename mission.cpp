@@ -59,8 +59,8 @@ void Mission::createSearch()
 {
     if (search)
         delete search;
-//    if (config.SearchParams[CN_SP_ST] == CN_SP_ST_BFS)
-//        search = new BFS();
+    // if (config.SearchParams[CN_SP_ST] == CN_SP_ST_BFS)
+        // search = new BFS();
     else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_DIJK)
         search = new Dijkstra();
     else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_ASTAR)

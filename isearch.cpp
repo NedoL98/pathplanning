@@ -4,8 +4,6 @@
 #include <time.h>
 #include <utility>
 
-const double EPS = 1e-7;
-
 ISearch::ISearch()
 {
     hweight = 1;
@@ -28,8 +26,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     };
 
     auto compareByDistance = [&](Node v1, Node v2) {
-        if (v1.g != v2.g) {
-            return v1.g < v2.g;
+        if (v1.F != v2.F) {
+            return v1.F < v2.F;
         }
         return compareByCell(v1, v2);
     };
@@ -37,10 +35,14 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     std::multiset<Node, decltype(compareByDistance)> open(compareByDistance);
     std::multiset<Node, decltype(compareByCell)> closed(compareByCell);
 
+    //Auxilary structure, that helps keeping only one copy of node in OPEN
+    std::multiset<Node, decltype(compareByCell)> is_open(compareByCell);
+
     Node goalNode = Node(map.getGoalPoint().first, map.getGoalPoint().second);
     Node startingNode = Node(map.getStartingPoint().first, map.getStartingPoint().second);
 
     open.insert(startingNode);
+    is_open.insert(startingNode);
 
     int step_counter = 0;
 
@@ -57,10 +59,6 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         std::cout << curNode.g << std::endl;
         */
         open.erase(open.begin()); //Erase it from queue
-
-        if (closed.count(curNode)) { //If already visited
-            continue;
-        }
 
         closed.insert(curNode); //Mark it as a visited vertex
 
@@ -82,8 +80,19 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
             //If it's not visited yet or if new distance is better
             nextNode.parent = ancestor_ptr;
 
-            if (!closed.count(nextNode)) {
+            auto nodeCopyIter = is_open.find(nextNode);
+
+            if (nodeCopyIter == is_open.end() or
+                nodeCopyIter->F > nextNode.F) {
+
+                //Erase the node, if already in open
+                if (nodeCopyIter != is_open.end()) {
+                    open.erase(*nodeCopyIter);
+                    is_open.erase(nodeCopyIter);
+                }
+                //Then insert the node
                 open.insert(nextNode);
+                is_open.insert(nextNode);
             }
         }
     }
@@ -138,17 +147,32 @@ bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOption
     return true;
 }
 
+double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options) {
+    if (!options.allowdiagonal) {
+        return abs(i1 - i2) + abs(j1 - j2);
+    } else {
+        return sqrt((i1 - i2) * (i1 - i2) + (j1 - j2) * (j1 - j2));
+    }
+}
+
 double l_diff(double dx, double dy) {
     return sqrt(dx * dx + dy * dy);
 }
 
 std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
+    int xEnd = map.getGoalPoint().first;
+    int yEnd = map.getGoalPoint().second;
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
             if (check(curNode.i, curNode.j, dx, dy, map, options)) {
-                successors.push_back(Node(curNode.i + dx, curNode.j + dy,
-                                          curNode.g + l_diff(dx, dy)));
+                Node newNode;
+                newNode.i = curNode.i + dx;
+                newNode.j = curNode.j + dy;
+                newNode.g = curNode.g + l_diff(dx, dy);
+                newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
+                newNode.F = newNode.g + newNode.H;
+                successors.push_back(newNode);
             }
         }
     }

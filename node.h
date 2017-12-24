@@ -19,16 +19,17 @@ struct Node
     const Node    *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-value of the current node)
 
 
-    Node (int x, int y, double dist = 0, const Node *ancestor = nullptr)
+    Node (int x,
+          int y,
+          double g_dist = 0,
+          double H_dist = 0,
+          const Node *ancestor = nullptr)
     {
         i = x;
         j = y;
-        g = dist;
-        /*
-        if (ancestor != nullptr) {
-            std::cout << ancestor->i << " " << ancestor->j << std::endl;
-        }
-        */
+        g = g_dist;
+        H = H_dist;
+        F = g + H;
         parent = ancestor;
     }
 
