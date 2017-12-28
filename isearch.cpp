@@ -6,7 +6,7 @@
 
 ISearch::ISearch()
 {
-    hweight = 1;
+    hweight = 0;
     breakingties = CN_SP_BT_GMAX;
 }
 
@@ -171,7 +171,7 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
                 newNode.j = curNode.j + dy;
                 newNode.g = curNode.g + l_diff(dx, dy);
                 newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
-                newNode.F = newNode.g + newNode.H;
+                newNode.F = newNode.g + hweight * newNode.H;
                 successors.push_back(newNode);
             }
         }
