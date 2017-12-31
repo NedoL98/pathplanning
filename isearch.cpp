@@ -102,10 +102,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         makePrimaryPath(*closed.find(goalNode));
     }
 
+    clock_t time_finish = clock();
+
     //Making secondary path
     makeSecondaryPath();
-
-    clock_t time_finish = clock();
 
     sresult.pathfound = (closed.count(goalNode));
     if (sresult.pathfound) {
@@ -148,10 +148,17 @@ bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOption
 }
 
 double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options) {
-    if (!options.allowdiagonal) {
-        return abs(i1 - i2) + abs(j1 - j2);
-    } else {
-        return sqrt((i1 - i2) * (i1 - i2) + (j1 - j2) * (j1 - j2));
+    int dx = abs(i1 - i2);
+    int dy = abs(j1 - j2);
+    switch (options.metrictype) {
+        case CN_SP_MT_MANH:
+            return dx + dy;
+        case CN_SP_MT_EUCL:
+            return sqrt(dx * dx + dy * dy);
+        case CN_SP_MT_CHEB:
+            return std::max(dx, dy);
+        case CN_SP_MT_DIAG:
+            return dx + dy - std::min(dx, dy) * sqrt(2);
     }
 }
 
