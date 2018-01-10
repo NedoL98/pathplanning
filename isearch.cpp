@@ -12,8 +12,6 @@ ISearch::ISearch()
 
 ISearch::~ISearch(void) {}
 
-double l_diff(double dx, double dy);
-
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
     clock_t time_start = clock();
 
@@ -162,10 +160,6 @@ double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Env
     }
 }
 
-double l_diff(double dx, double dy) {
-    return sqrt(dx * dx + dy * dy);
-}
-
 std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
     int xEnd = map.getGoalPoint().first;
@@ -176,7 +170,7 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
                 Node newNode;
                 newNode.i = curNode.i + dx;
                 newNode.j = curNode.j + dy;
-                newNode.g = curNode.g + l_diff(dx, dy);
+                newNode.g = curNode.g + computeHFromCellToCell(curNode.i, curNode.j, newNode.i, newNode.j, options);
                 newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
                 newNode.F = newNode.g + hweight * newNode.H;
                 successors.push_back(newNode);

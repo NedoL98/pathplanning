@@ -37,7 +37,6 @@ class ISearch
         //Start with very simple (and ineffective) structures like list or vector and make it work first
         //and only then begin enhancement!
 
-
         double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options);
         std::list<Node> findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options);
         void makePrimaryPath(Node curNode);//Makes path using back pointers
