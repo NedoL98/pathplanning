@@ -27,7 +27,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         if (v1.F != v2.F) {
             return v1.F < v2.F;
         }
-        return compareByCell(v1, v2);
+        return breakTie(v1, v2, options);
     };
 
     std::multiset<Node, decltype(compareByDistance)> open(compareByDistance);
@@ -156,7 +156,18 @@ double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Env
         case CN_SP_MT_CHEB:
             return std::max(dx, dy);
         case CN_SP_MT_DIAG:
-            return dx + dy - std::min(dx, dy) * sqrt(2);
+            return sqrt(dx * dx + dy * dy);
+            //Probably need to fix this later
+            //return max(dx, dy)dx + dy - std::min(dx, dy) * sqrt(2);
+    }
+}
+
+bool ISearch::breakTie(const Node &node1, const Node &node2, const EnvironmentOptions &options) {
+    switch (breakingties) {
+        case CN_SP_BT_GMAX:
+            return node1.g > node2.g;
+        case CN_SP_BT_GMIN:
+            return node1.g < node2.g;
     }
 }
 
@@ -182,7 +193,7 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
 
 void ISearch::makePrimaryPath(Node curNode) {
     while (true) {
-        lppath.push_back(curNode);
+        lppath.push_front(curNode);
         if (curNode.parent != nullptr) {
             curNode = *curNode.parent;
         } else {
@@ -203,11 +214,11 @@ void ISearch::makeSecondaryPath() {
         auto nextPtr = nodePtr;
         ++nextPtr; //Not really a good codestyle either
         if (nextPtr == lppath.end()) {
-            hppath.push_front(*nodePtr);
+            hppath.push_back(*nodePtr);
         } else {
             auto newDifference = getDifference(*nodePtr, *nextPtr);
             if (previousDifference != newDifference) {
-                hppath.push_front(*nodePtr);
+                hppath.push_back(*nodePtr);
                 previousDifference = newDifference;
             }
         }
