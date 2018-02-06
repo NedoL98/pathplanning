@@ -38,11 +38,11 @@
     </map>
     <algorithm>
         <searchtype>astar</searchtype>
-        <metrictype>diagonal</metrictype>
+        <metrictype>manhattan</metrictype>
         <breakingties>g-max</breakingties>
         <hweight>1</hweight>
-        <allowdiagonal>true</allowdiagonal>
-        <cutcorners>true</cutcorners>
+        <allowdiagonal>false</allowdiagonal>
+        <cutcorners>false</cutcorners>
         <allowsqueeze>false</allowsqueeze>
     </algorithm>
     <options>
