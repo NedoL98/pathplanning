@@ -58,7 +58,7 @@
 - logpath, logfilename (строки) - необязательные параметры, отвечающие соответственно за то, где создаётся лог-файл, и как он называется.
 
 ## Формат выходных данных
-[Пример выходных данных](https://drive.google.com/file/d/1zRqD3jsC3d2AZE6yaBWpwAGZWvfe9VOi/view?usp=sharing)
+[Пример выходных данных](https://drive.google.com/file/d/1qmQSBKhjzPsREo1HtBrBVpinmlO7b4Fg/view?usp=sharing)
 
 Выходные данные также представляют из себя XML-файл. Первые три раздела выходного файла в точности повторяют аналогичные разделы во входных данных (секции Map, Algorithm и Options). Далее в выходном файле следует часть Log.
 
