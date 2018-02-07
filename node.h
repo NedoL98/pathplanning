@@ -42,6 +42,13 @@ struct Node
     bool operator != (const Node &other) const {
         return !(*this == other);
     }
+
+    void print() const {
+        std::cout << "Coordinates: " << i << " " << j << std::endl;
+        std::cout << "F value: " << F << std::endl;
+        std::cout << "G value: " << g << std::endl;
+        std::cout << "H value: " << H << std::endl;
+    }
 };
 
 #endif

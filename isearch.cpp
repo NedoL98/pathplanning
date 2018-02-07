@@ -30,11 +30,11 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         return breakTie(v1, v2);
     };
 
-    std::multiset<Node, decltype(compareByDistance)> open(compareByDistance);
-    std::multiset<Node, decltype(compareByCell)> closed(compareByCell);
+    std::set<Node, decltype(compareByDistance)> open(compareByDistance);
+    std::set<Node, decltype(compareByCell)> closed(compareByCell);
 
     //Auxilary structure, that helps keeping only one copy of node in OPEN
-    std::multiset<Node, decltype(compareByCell)> is_open(compareByCell);
+    std::set<Node, decltype(compareByCell)> is_open(compareByCell);
 
     Node goalNode = Node(map.getGoalPoint().first, map.getGoalPoint().second);
     Node startingNode = Node(map.getStartingPoint().first, map.getStartingPoint().second);
@@ -44,25 +44,14 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     int step_counter = 0;
 
-    // std::cout << "Here\n" << std::endl;
-
     while (!open.empty())
     {
         ++step_counter;
         Node curNode = *open.begin(); //Get the nearest node
-        /*
-        std::cout << "Current node: " << std::endl;
-        std::cout << curNode.i << " " << curNode.j << std::endl;
-        std::cout << "Current distance: " << std::endl;
-        std::cout << curNode.g << std::endl;
-        */
+
         open.erase(open.begin()); //Erase it from queue
 
         closed.insert(curNode); //Mark it as a visited vertex
-
-        //Pointer to an ancestor
-        auto curNode_ptr = closed.find(curNode);
-        const Node *ancestor_ptr = &(*curNode_ptr);
 
         if (curNode.i == map.getGoalPoint().first and
             curNode.j == map.getGoalPoint().second) //Goalpoint reached
@@ -70,9 +59,12 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
             break;
         }
 
-        //It's sufficient to take the one from ''distance'' structure
-        //Because otherwise the element will be deleted
-        auto successors = findSuccessors(*curNode_ptr, map, options);
+        //Pointer to an ancestor
+        auto curNode_ptr = closed.find(curNode);
+        const Node *ancestor_ptr = &(*curNode_ptr);
+
+        //Finding successors for current node
+        auto successors = findSuccessors(curNode, map, options);
 
         for (auto nextNode : successors) { //Inserting new nodes
             //If it's not visited yet or if new distance is better
@@ -85,9 +77,13 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
                 //Erase the node, if already in open
                 if (nodeCopyIter != is_open.end()) {
+                    //Erasing the exact same node because of special compare function
+                    //Which distinguishes different nodes not just by distance
+                    //But by other parameters as well
                     open.erase(*nodeCopyIter);
                     is_open.erase(nodeCopyIter);
                 }
+
                 //Then insert the node
                 open.insert(nextNode);
                 is_open.insert(nextNode);
@@ -160,12 +156,25 @@ double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Env
     }
 }
 
+bool compareByDistance(const Node &node1,
+                       const Node &node2) {
+    if (node1.i != node2.i) {
+        return node1.i < node2.i;
+    }
+    return node1.j < node2.j;
+}
+
 bool ISearch::breakTie(const Node &node1, const Node &node2) {
-    //Swaped values?
     if (breakingties == CN_SP_BT_GMAX) {
-        return node1.g < node2.g;
-    } else if (breakingties == CN_SP_BT_GMIN) {
+        if (node1.g == node2.g) {
+            return compareByDistance(node1, node2);
+        }
         return node1.g > node2.g;
+    } else if (breakingties == CN_SP_BT_GMIN) {
+        if (node1.g == node2.g) {
+            return compareByDistance(node1, node2);
+        }
+        return node1.g < node2.g;
     }
 }
 
