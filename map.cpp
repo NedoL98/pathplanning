@@ -7,8 +7,10 @@ Map::Map()
     width = -1;
     start_i = -1;
     start_j = -1;
+    start_k = -1;
     goal_i = -1;
     goal_j = -1;
+    goal_k = -1;
     Grid = NULL;
     cellSize = 1;
 }
@@ -334,12 +336,12 @@ double Map::getCellSize() const
       return cellSize;
 }
 
-std::pair<int, int> Map::getStartingPoint() const
+std::vector<int> Map::getStartingPoint() const
 {
-    return {start_i, start_j};
+    return {start_i, start_j, start_k};
 }
 
-std::pair<int, int> Map::getGoalPoint() const
+std::vector<int> Map::getGoalPoint() const
 {
-    return {goal_i, goal_j};
+    return {goal_i, goal_j, goal_k};
 }

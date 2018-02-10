@@ -26,7 +26,8 @@ SOURCES += \
     main.cpp \
     jp_search.cpp \
     theta.cpp \
-    environmentoptions.cpp
+    environmentoptions.cpp \
+    node.cpp
 
 HEADERS += \
     tinyxml2.h \

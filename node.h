@@ -1,6 +1,9 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <iostream>
+#include <vector>
+
 //That's the data structure for storing a single search node.
 //Although one might realize A* pathfinder relying only on g-value,
 //it's a good idea to store f- and h-values explicitly for the sake of simplicity
@@ -14,41 +17,19 @@
 
 struct Node
 {
-    int     i, j; //grid cell coordinates
+    int     i, j, k; //grid cell coordinates
     double  F, g, H; //f-, g- and h-values of the search node
     const Node    *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-value of the current node)
 
-
-    Node (int x,
-          int y,
-          double g_dist = 0,
-          double H_dist = 0,
-          const Node *ancestor = nullptr)
-    {
-        i = x;
-        j = y;
-        g = g_dist;
-        H = H_dist;
-        F = g + H;
-        parent = ancestor;
-    }
-
     Node() = default;
+    Node(int x, int y, int z, double g_dist = 0, double H_dist = 0, const Node *ancestor = nullptr);
+    Node(std::vector<int> coordinates, double g_dist = 0, double H_dist = 0, const Node *ancestor = nullptr);
 
-    bool operator== (const Node &other) const {
-        return i == other.i && j == other.j;
-    }
+    bool operator== (const Node &other) const;
 
-    bool operator != (const Node &other) const {
-        return !(*this == other);
-    }
+    bool operator != (const Node &other) const;
 
-    void print() const {
-        std::cout << "Coordinates: " << i << " " << j << std::endl;
-        std::cout << "F value: " << F << std::endl;
-        std::cout << "G value: " << g << std::endl;
-        std::cout << "H value: " << H << std::endl;
-    }
+    void print() const;
 };
 
 #endif

@@ -20,8 +20,8 @@ class Map
 {
     private:
         int     height, width;
-        int     start_i, start_j;
-        int     goal_i, goal_j;
+        int     start_i, start_j, start_k;
+        int     goal_i, goal_j, goal_k;
         double  cellSize;
         int**   Grid;
 
@@ -37,8 +37,8 @@ class Map
         int  getValue(int i, int j) const;
         int getMapHeight() const;
         int getMapWidth() const;
-        std::pair<int, int> getStartingPoint() const;
-        std::pair<int, int> getGoalPoint() const;
+        std::vector<int> getStartingPoint() const;
+        std::vector<int> getGoalPoint() const;
         double getCellSize() const;
 
 };

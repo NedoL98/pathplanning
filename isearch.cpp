@@ -1,4 +1,5 @@
 #include "isearch.h"
+#include <algorithm>
 #include <map>
 #include <set>
 #include <time.h>
@@ -19,8 +20,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     auto compareByCell = [](Node v1, Node v2) {
         if (v1.i != v2.i) {
             return v1.i < v2.i;
+        } else if (v1.j != v2.j) {
+            return v1.j < v2.j;
         }
-        return v1.j < v2.j;
+        return v1.k < v2.k;
     };
 
     auto compareByDistance = [&](Node v1, Node v2) {
@@ -36,8 +39,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     //Auxilary structure, that helps keeping only one copy of node in OPEN
     std::set<Node, decltype(compareByCell)> is_open(compareByCell);
 
-    Node goalNode = Node(map.getGoalPoint().first, map.getGoalPoint().second);
-    Node startingNode = Node(map.getStartingPoint().first, map.getStartingPoint().second);
+    Node goalNode = Node(map.getGoalPoint());
+    Node startingNode = Node(map.getStartingPoint());
 
     open.insert(startingNode);
     is_open.insert(startingNode);
@@ -53,8 +56,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
         closed.insert(curNode); //Mark it as a visited vertex
 
-        if (curNode.i == map.getGoalPoint().first and
-            curNode.j == map.getGoalPoint().second) //Goalpoint reached
+        if (curNode == map.getGoalPoint()) //Goalpoint reached
         {
             break;
         }
@@ -113,46 +115,42 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     return sresult;
 }
 
-bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
-    if (dx == 0 and dy == 0) //Zero movement case
+bool check(const Node &curNode, std::vector<int> dm, const Map &map, const EnvironmentOptions &options) {
+    //Zero movement case
+    if (dm[0] == 0 and dm[1] == 0 and dm[2] == 0) {
+        return false;
+    }
+
+    //Checking height of new vertex
+    if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) > curNode.k + dm[2])
     {
         return false;
     }
-    if (map.getValue(x + dx, y + dy) != 0) //New vertex must be free
-    {
-        return false;
-    }
-    if (dx != 0 and dy != 0)
-    {
-        if (!options.allowdiagonal)
-        {
-            return false;
-        }
-        int corners = map.getValue(x + dx, y) + map.getValue(x, y + dy); //Counting corners
-        if (corners >= 1 and !options.cutcorners)
-        {
-            return false;
-        }
-        if (corners == 2 and !options.allowsqueeze)
-        {
-            return false;
-        }
-    }
+
+    //For now I'll assume, that any movement is permitted
     return true;
 }
 
-double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options) {
-    int dx = abs(i1 - i2);
-    int dy = abs(j1 - j2);
+double ISearch::computeHFromCellToCell(const Node &from, const Node &to, const EnvironmentOptions &options) {
+    std::vector<int> dm = {abs(from.i - to.i), abs(from.j - to.j), abs(from.k - to.k)};
     switch (options.metrictype) {
         case CN_SP_MT_MANH:
-            return dx + dy;
+            return std::accumulate(dm.begin(), dm.end(), 0);
         case CN_SP_MT_EUCL:
-            return sqrt(dx * dx + dy * dy);
+            return sqrt(std::inner_product(dm.begin(), dm.end(), dm.begin(), 0));
         case CN_SP_MT_CHEB:
-            return std::max(dx, dy);
-        case CN_SP_MT_DIAG:
-            return std::abs(dx - dy) + std::min(dx, dy) * sqrt(2.0);
+            return *max_element(dm.begin(), dm.end());
+        case CN_SP_MT_DIAG: {
+            double res = 0;
+            for (int i = 3; i >= 1; --i) {
+                double mn = *min_element(dm.begin(), dm.end());
+                for (auto &c : dm) {
+                    c -= mn;
+                }
+                res += mn * sqrt(i);
+            }
+            return res;
+        }
     }
 }
 
@@ -160,8 +158,10 @@ bool compareByDistance(const Node &node1,
                        const Node &node2) {
     if (node1.i != node2.i) {
         return node1.i < node2.i;
+    } else if (node1.j != node2.j) {
+        return node1.j < node2.j;
     }
-    return node1.j < node2.j;
+    return node1.k < node2.k;
 }
 
 bool ISearch::breakTie(const Node &node1, const Node &node2) {
@@ -180,18 +180,20 @@ bool ISearch::breakTie(const Node &node1, const Node &node2) {
 
 std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
-    int xEnd = map.getGoalPoint().first;
-    int yEnd = map.getGoalPoint().second;
+    Node goalNode(map.getGoalPoint());
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
-            if (check(curNode.i, curNode.j, dx, dy, map, options)) {
-                Node newNode;
-                newNode.i = curNode.i + dx;
-                newNode.j = curNode.j + dy;
-                newNode.g = curNode.g + computeHFromCellToCell(curNode.i, curNode.j, newNode.i, newNode.j, options);
-                newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
-                newNode.F = newNode.g + hweight * newNode.H;
-                successors.push_back(newNode);
+            for (int dz = -1; dz <= 1; ++dz) {
+                if (check(curNode, {dx, dy, dz}, map, options)) {
+                    Node newNode;
+                    newNode.i = curNode.i + dx;
+                    newNode.j = curNode.j + dy;
+                    newNode.k = curNode.k + dz;
+                    newNode.g = curNode.g + computeHFromCellToCell(curNode, newNode, options);
+                    newNode.H = computeHFromCellToCell(newNode, goalNode, options);
+                    newNode.F = newNode.g + hweight * newNode.H;
+                    successors.push_back(newNode);
+                }
             }
         }
     }
