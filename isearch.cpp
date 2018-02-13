@@ -1,7 +1,9 @@
 #include "isearch.h"
+#include <chrono>
+#include <ctime>
 #include <map>
+#include <ratio>
 #include <set>
-#include <time.h>
 #include <utility>
 
 ISearch::ISearch()
@@ -13,7 +15,7 @@ ISearch::ISearch()
 ISearch::~ISearch(void) {}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
-    clock_t time_start = clock();
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //Lambda-functions as a comparator
     auto compareByCell = [](Node v1, Node v2) {
@@ -96,7 +98,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         makePrimaryPath(*closed.find(goalNode));
     }
 
-    clock_t time_finish = clock();
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
 
     //Making secondary path
     makeSecondaryPath();
@@ -107,7 +110,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     }
     sresult.nodescreated = closed.size() + open.size();
     sresult.numberofsteps = step_counter;
-    sresult.time = static_cast<double>(time_finish) - static_cast<double>(time_start);
+    sresult.time = time_span.count();
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;
     return sresult;
