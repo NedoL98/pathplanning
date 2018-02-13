@@ -1,10 +1,7 @@
 #include "isearch.h"
-<<<<<<< HEAD
 #include <algorithm>
-=======
 #include <chrono>
 #include <ctime>
->>>>>>> master
 #include <map>
 #include <ratio>
 #include <set>
@@ -46,6 +43,9 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     Node goalNode = Node(map.getGoalPoint());
     Node startingNode = Node(map.getStartingPoint());
+
+    std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << std::endl;
+    std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << std::endl;
 
     open.insert(startingNode);
     is_open.insert(startingNode);

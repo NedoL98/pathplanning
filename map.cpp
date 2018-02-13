@@ -293,17 +293,9 @@ bool Map::getMap(const char *FileName)
     if (!(hasFINX && hasFINY && hasSTX && hasSTY))
         return false;
 
-    if (Grid[start_i][start_j] != CN_GC_NOOBS) {
-        std::cout << "Error! Start cell is not traversable (cell's value is" << Grid[start_i][start_j] << ")!"
-                  << std::endl;
-        return false;
-    }
-
-    if (Grid[goal_i][goal_j] != CN_GC_NOOBS) {
-        std::cout << "Error! Goal cell is not traversable (cell's value is" << Grid[goal_i][goal_j] << ")!"
-                  << std::endl;
-        return false;
-    }
+    //Setting heights of start and goal points
+    start_k = Grid[start_i][start_j];
+    goal_k = Grid[goal_i][goal_j];
 
     return true;
 }
