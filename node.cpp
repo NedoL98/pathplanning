@@ -21,7 +21,7 @@ Node::Node(std::vector<int> coordinates, double g_dist, double H_dist, const Nod
 }
 
 bool Node::operator== (const Node &other) const {
-    return i == other.i && j == other.j;
+    return i == other.i and j == other.j and k == other.k;
 }
 
 bool Node::operator != (const Node &other) const {
@@ -29,7 +29,7 @@ bool Node::operator != (const Node &other) const {
 }
 
 void Node::print() const {
-    std::cout << "Coordinates: " << i << " " << j << std::endl;
+    std::cout << "Coordinates: " << i << " " << j << " " << k << std::endl;
     std::cout << "F value: " << F << std::endl;
     std::cout << "G value: " << g << std::endl;
     std::cout << "H value: " << H << std::endl;

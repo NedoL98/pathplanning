@@ -294,8 +294,8 @@ bool Map::getMap(const char *FileName)
         return false;
 
     //Setting heights of start and goal points
-    start_k = Grid[start_i][start_j];
-    goal_k = Grid[goal_i][goal_j];
+    start_k = Grid[start_i][start_j] + 1;
+    goal_k = Grid[goal_i][goal_j] + 1;
 
     return true;
 }

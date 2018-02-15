@@ -44,8 +44,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     Node goalNode = Node(map.getGoalPoint());
     Node startingNode = Node(map.getStartingPoint());
 
-    std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << std::endl;
-    std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << std::endl;
+    std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << " " << std::endl;
+    std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << " " << std::endl;
 
     open.insert(startingNode);
     is_open.insert(startingNode);
@@ -61,8 +61,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
         closed.insert(curNode); //Mark it as a visited vertex
 
-        if (curNode == map.getGoalPoint()) //Goalpoint reached
-        {
+        //curNode.print();
+
+        //Goalpoint reached
+        if (curNode == goalNode) {
             break;
         }
 
@@ -128,12 +130,46 @@ bool check(const Node &curNode, std::vector<int> dm, const Map &map, const Envir
     }
 
     //Checking height of new vertex
-    if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) > curNode.k + dm[2])
-    {
+    if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) >= curNode.k + dm[2]) {
         return false;
     }
 
-    //For now I'll assume, that any movement is permitted
+    if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != dm.size() - 1) {
+        return false;
+    }
+
+    //This should be rewritten for more complex 3d maps
+
+    Node corner;
+    std::vector<int> cur_coord = {curNode.i + dm[0], curNode.j + dm[1], curNode.k + dm[2]};
+    for (int i = 0; i < dm.size(); ++i) {
+        for (int j = 0; j < dm.size(); ++j) {
+            if (i == j or dm[i] == 0 or dm[j] == 0) {
+                continue;
+            }
+
+            int cnt = 0;
+
+            cur_coord[i] -= dm[i];
+            corner = Node(cur_coord);
+            cur_coord[i] += dm[i];
+            cnt += (map.getValue(corner.i, corner.j) >= corner.k);
+
+            cur_coord[j] -= dm[j];
+            corner = Node(cur_coord);
+            cur_coord[j] += dm[j];
+            cnt += (map.getValue(corner.i, corner.j) >= corner.k);
+
+            if (!options.cutcorners and cnt > 0) {
+                return false;
+            }
+
+            if (!options.allowsqueeze and cnt > 1) {
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 
