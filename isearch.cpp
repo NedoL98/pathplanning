@@ -44,8 +44,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     Node goalNode = Node(map.getGoalPoint());
     Node startingNode = Node(map.getStartingPoint());
 
-    std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << " " << std::endl;
-    std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << " " << std::endl;
+    //std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << " " << std::endl;
+    //std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << " " << std::endl;
 
     open.insert(startingNode);
     is_open.insert(startingNode);
@@ -129,12 +129,17 @@ bool check(const Node &curNode, std::vector<int> dm, const Map &map, const Envir
         return false;
     }
 
-    //Checking height of new vertex
+    //Checking if possible to fly over an obstacle
     if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) >= curNode.k + dm[2]) {
         return false;
     }
 
-    if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != dm.size() - 1) {
+    //Checking if underneath the boundary
+    if (curNode.k + dm[2] > map.getMapMaxAlt()) {
+       return false;
+    }
+
+    if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != static_cast<int>(dm.size()) - 1) {
         return false;
     }
 
@@ -142,12 +147,12 @@ bool check(const Node &curNode, std::vector<int> dm, const Map &map, const Envir
 
     Node corner;
     std::vector<int> cur_coord = {curNode.i + dm[0], curNode.j + dm[1], curNode.k + dm[2]};
-    for (int i = 0; i < dm.size(); ++i) {
-        for (int j = 0; j < dm.size(); ++j) {
+    for (int i = 0; i < static_cast<int>(dm.size()); ++i) {
+        for (int j = 0; j < static_cast<int>(dm.size()); ++j) {
             if (i == j or dm[i] == 0 or dm[j] == 0) {
                 continue;
             }
-
+            //dm[i] != 0 and dm[1] != 0
             int cnt = 0;
 
             cur_coord[i] -= dm[i];
@@ -178,10 +183,6 @@ double ISearch::computeHFromCellToCell(const Node &from, const Node &to, const E
     switch (options.metrictype) {
         case CN_SP_MT_MANH:
             return std::accumulate(dm.begin(), dm.end(), 0);
-        case CN_SP_MT_EUCL:
-            return sqrt(std::inner_product(dm.begin(), dm.end(), dm.begin(), 0));
-        case CN_SP_MT_CHEB:
-            return *max_element(dm.begin(), dm.end());
         case CN_SP_MT_DIAG: {
             double res = 0;
             for (int i = 3; i >= 1; --i) {
@@ -193,6 +194,10 @@ double ISearch::computeHFromCellToCell(const Node &from, const Node &to, const E
             }
             return res;
         }
+        case CN_SP_MT_CHEB:
+            return *max_element(dm.begin(), dm.end());
+        default: //CN_SP_MT_EUCL
+            return sqrt(std::inner_product(dm.begin(), dm.end(), dm.begin(), 0));
     }
 }
 
@@ -212,7 +217,7 @@ bool ISearch::breakTie(const Node &node1, const Node &node2) {
             return compareByDistance(node1, node2);
         }
         return node1.g > node2.g;
-    } else if (breakingties == CN_SP_BT_GMIN) {
+    } else { //breakingties == CN_SP_BT_GMIN
         if (node1.g == node2.g) {
             return compareByDistance(node1, node2);
         }

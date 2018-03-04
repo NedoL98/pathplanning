@@ -172,7 +172,11 @@ bool Config::getConfig(const char *FileName)
     else {
         element = algorithm->FirstChildElement(CNS_TAG_CC);
         if (!element) {
-            std::cout << "Warning! No '" << CNS_TAG_CC << "' element found in XML file." << std::endl;
+            //Assuming that Bottleneck and Cutcorners parameters are the same
+            element = algorithm->FirstChildElement(CNS_TAG_BB);
+        }
+        if (!element) {
+            std::cout << "Warning! No '" << CNS_TAG_CC << " or " << CNS_TAG_BB << "' elements found in XML file." << std::endl;
             std::cout << "Value of '" << CNS_TAG_CC << "' was defined to default - false" << std::endl;
             SearchParams[CN_SP_CC] = 0;
         }

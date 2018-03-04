@@ -17,6 +17,7 @@
         #define CNS_TAG_FINY        "finishy"
         #define CNS_TAG_GRID        "grid"
             #define CNS_TAG_ROW     "row"
+        #define CNS_TAG_MAXALT      "maxaltitude"
 
     #define CNS_TAG_ALG             "algorithm"
         #define CNS_TAG_ST          "searchtype"
@@ -26,6 +27,7 @@
         #define CNS_TAG_AS          "allowsqueeze"
         #define CNS_TAG_AD          "allowdiagonal"
         #define CNS_TAG_CC          "cutcorners"
+        #define CNS_TAG_BB          "bottleneck"
 
     #define CNS_TAG_OPT             "options"
         #define CNS_TAG_LOGLVL      "loglevel"

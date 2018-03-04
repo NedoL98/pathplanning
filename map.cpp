@@ -13,6 +13,7 @@ Map::Map()
     goal_k = -1;
     Grid = NULL;
     cellSize = 1;
+    max_alt = -1;
 }
 
 Map::~Map()
@@ -48,7 +49,10 @@ bool Map::getMap(const char *FileName)
     std::string value;
     std::stringstream stream;
 
-    bool hasGridMem = false, hasGrid = false, hasHeight = false, hasWidth = false, hasSTX = false, hasSTY = false, hasFINX = false, hasFINY = false, hasCellSize = false;
+    bool hasGridMem = false, hasGrid = false, hasHeight = false, hasWidth = false;
+    bool hasSTX = false, hasSTY = false, hasFINX = false, hasFINY = false, hasCellSize = false;
+    bool hasMaxAlt = false;
+
 
     tinyxml2::XMLDocument doc;
 
@@ -283,6 +287,21 @@ bool Map::getMap(const char *FileName)
 
                 element = element->NextSiblingElement();
             }
+        } else if (value == CNS_TAG_MAXALT) {
+            if (hasMaxAlt == true) {
+                std::cout << "Warning! Duplicate '" << CNS_TAG_MAXALT << "' encountered." << std::endl;
+                std::cout << "Only first value of '" << CNS_TAG_MAXALT << "' =" << max_alt << "will be used." << std::endl;
+            } else {
+                if (!(stream >> max_alt && max_alt > 0)) {
+                    std::cout << "Warning! Invalid value of '" << CNS_TAG_MAXALT
+                              << "' tag encountered (or could not convert to integer)" << std::endl;
+                    std::cout << "Value of '" << CNS_TAG_MAXALT << "' tag should be an integer AND >0" << std::endl;
+                    std::cout << "Continue reading XML and hope correct value of '" << CNS_TAG_MAXALT
+                              << "' tag will be encountered later..." << std::endl;
+                }
+                else
+                    hasMaxAlt = true;
+            }
         }
     }
     //some additional checks
@@ -326,6 +345,11 @@ int Map::getMapWidth() const
 double Map::getCellSize() const
 {
       return cellSize;
+}
+
+int Map::getMapMaxAlt() const
+{
+    return max_alt;
 }
 
 std::vector<int> Map::getStartingPoint() const

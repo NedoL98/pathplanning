@@ -24,6 +24,7 @@ class Map
         int     goal_i, goal_j, goal_k;
         double  cellSize;
         int**   Grid;
+        int     max_alt;
 
     public:
         Map();
@@ -37,6 +38,7 @@ class Map
         int  getValue(int i, int j) const;
         int getMapHeight() const;
         int getMapWidth() const;
+        int getMapMaxAlt() const;
         std::vector<int> getStartingPoint() const;
         std::vector<int> getGoalPoint() const;
         double getCellSize() const;
