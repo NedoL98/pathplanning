@@ -62,15 +62,17 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         }
 
         //Pointer to an ancestor
-        auto curNode_ptr = closed.find(curNode);
-        const Node *ancestor_ptr = &(*curNode_ptr);
+        std::set<Node>::iterator curNode_ptr = closed.find(curNode);
+        Node *ancestor_ptr = (Node*)(&(*curNode_ptr));
 
         //Finding successors for current node
         auto successors = findSuccessors(curNode, map, options);
 
         for (auto nextNode : successors) { //Inserting new nodes
             //If it's not visited yet or if new distance is better
-            nextNode.parent = ancestor_ptr;
+
+            //nextNode.parent = ancestor_ptr;
+            nextNode.parent = getParent(&nextNode, ancestor_ptr, map, options);
 
             auto nodeCopyIter = is_open.find(nextNode);
 
@@ -217,6 +219,9 @@ std::pair<int, int> getDifference(Node &curNode, Node &nextNode) {
 }
 
 void ISearch::makeSecondaryPath() {
+    if (lppath.empty()) {
+        return;
+    }
     auto nodePtr = lppath.begin();
     std::pair<int, int> previousDifference({0, 0}); //Probably better to make a bool flag
 
