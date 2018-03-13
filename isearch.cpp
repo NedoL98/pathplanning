@@ -148,8 +148,8 @@ bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOption
 }
 
 double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options) {
-    int dx = abs(i1 - i2);
-    int dy = abs(j1 - j2);
+    double dx = abs(i1 - i2);
+    double dy = abs(j1 - j2);
     switch (options.metrictype) {
         case CN_SP_MT_MANH:
             return dx + dy;
@@ -160,6 +160,12 @@ double ISearch::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Env
         case CN_SP_MT_DIAG:
             return std::abs(dx - dy) + std::min(dx, dy) * sqrt(2.0);
     }
+}
+
+double ISearch::stepLength(const Node &node1, const Node &node2) {
+    double dx = abs(node1.i - node2.i);
+    double dy = abs(node1.j - node2.j);
+    return sqrt(dx * dx + dy * dy);
 }
 
 bool compareByDistance(const Node &node1,
@@ -250,7 +256,7 @@ void ISearch::calculate_distances(Node &curNode, const Map &map, const Environme
     curNode.g = 0;
     curNode.H = computeHFromCellToCell(curNode.i, curNode.j, xEnd, yEnd, options);
     if (curNode.parent != nullptr) {
-        curNode.g = curNode.parent->g + computeHFromCellToCell(parent->i, parent->j, curNode.i, curNode.j, options);
+        curNode.g = curNode.parent->g + stepLength(curNode, *parent);
     }
     curNode.F = curNode.g + hweight * curNode.H;
 }

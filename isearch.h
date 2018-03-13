@@ -44,6 +44,7 @@ class ISearch
         virtual const Node *getParent(Node *current, Node *parent, const Map &map, const EnvironmentOptions &options) { return parent;} //need for Theta*
         bool breakTie(const Node &node1, const Node &node2);
         void calculate_distances(Node &curNode, const Map &map, const EnvironmentOptions &options);
+        double stepLength(const Node &node1, const Node &node2);
 
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
