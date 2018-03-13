@@ -73,6 +73,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
             //nextNode.parent = ancestor_ptr;
             nextNode.parent = getParent(&nextNode, ancestor_ptr, map, options);
+            calculate_distances(nextNode, map, options);
 
             auto nodeCopyIter = is_open.find(nextNode);
 
@@ -193,9 +194,9 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
                 Node newNode;
                 newNode.i = curNode.i + dx;
                 newNode.j = curNode.j + dy;
-                newNode.g = curNode.g + computeHFromCellToCell(curNode.i, curNode.j, newNode.i, newNode.j, options);
-                newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
-                newNode.F = newNode.g + hweight * newNode.H;
+                //newNode.g = curNode.g + computeHFromCellToCell(curNode.i, curNode.j, newNode.i, newNode.j, options);
+                //newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
+                //newNode.F = newNode.g + hweight * newNode.H;
                 successors.push_back(newNode);
             }
         }
@@ -239,4 +240,17 @@ void ISearch::makeSecondaryPath() {
         }
         ++nodePtr;
     }
+}
+
+void ISearch::calculate_distances(Node &curNode, const Map &map, const EnvironmentOptions &options) {
+    int xEnd = map.getGoalPoint().first;
+    int yEnd = map.getGoalPoint().second;
+    const Node *parent = curNode.parent;
+
+    curNode.g = 0;
+    curNode.H = computeHFromCellToCell(curNode.i, curNode.j, xEnd, yEnd, options);
+    if (curNode.parent != nullptr) {
+        curNode.g = curNode.parent->g + computeHFromCellToCell(parent->i, parent->j, curNode.i, curNode.j, options);
+    }
+    curNode.F = curNode.g + hweight * curNode.H;
 }

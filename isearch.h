@@ -43,6 +43,7 @@ class ISearch
         virtual void makeSecondaryPath();//Makes another type of path(sections or points)
         virtual const Node *getParent(Node *current, Node *parent, const Map &map, const EnvironmentOptions &options) { return parent;} //need for Theta*
         bool breakTie(const Node &node1, const Node &node2);
+        void calculate_distances(Node &curNode, const Map &map, const EnvironmentOptions &options);
 
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
