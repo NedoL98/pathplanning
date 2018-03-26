@@ -33,7 +33,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     };
 
     std::set<Node, decltype(compareByDistance)> open(compareByDistance);
-    std::set<Node, decltype(compareByCell)> closed(compareByCell);
+    std::list<Node> closed;
 
     //Auxilary structure, that helps keeping only one copy of node in OPEN
     std::set<Node, decltype(compareByCell)> is_open(compareByCell);
@@ -45,6 +45,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     is_open.insert(startingNode);
 
     int step_counter = 0;
+    bool path_found = false;
 
     while (!open.empty())
     {
@@ -53,16 +54,17 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
         open.erase(open.begin()); //Erase it from queue
 
-        closed.insert(curNode); //Mark it as a visited vertex
+        closed.push_back(curNode); //Mark it as a visited vertex
 
         if (curNode.i == map.getGoalPoint().first and
             curNode.j == map.getGoalPoint().second) //Goalpoint reached
         {
+            path_found = true;
             break;
         }
 
         //Pointer to an ancestor
-        std::set<Node>::iterator curNode_ptr = closed.find(curNode);
+        std::list<Node>::iterator curNode_ptr = (--closed.end());
         Node *ancestor_ptr = (Node*)(&(*curNode_ptr));
 
         //Finding successors for current node
@@ -97,8 +99,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     }
 
     //Making primary path
-    if (closed.count(goalNode)) {
-        makePrimaryPath(*closed.find(goalNode));
+    if (path_found) {
+        //If path is found, then the last
+        //node is goalNode
+        makePrimaryPath(closed.back());
     }
 
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -107,9 +111,9 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     //Making secondary path
     makeSecondaryPath();
 
-    sresult.pathfound = (closed.count(goalNode));
+    sresult.pathfound = path_found;
     if (sresult.pathfound) {
-        sresult.pathlength = closed.find(goalNode)->g;
+        sresult.pathlength = closed.back().g;
     }
     sresult.nodescreated = closed.size() + open.size();
     sresult.numberofsteps = step_counter;
@@ -119,7 +123,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     return sresult;
 }
 
-bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
+bool ISearch::check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
     if (dx == 0 and dy == 0) //Zero movement case
     {
         return false;
@@ -168,8 +172,7 @@ double ISearch::stepLength(const Node &node1, const Node &node2) {
     return sqrt(dx * dx + dy * dy);
 }
 
-bool compareByDistance(const Node &node1,
-                       const Node &node2) {
+bool ISearch::compareByDistance(const Node &node1, const Node &node2) {
     if (node1.i != node2.i) {
         return node1.i < node2.i;
     }
@@ -221,7 +224,7 @@ void ISearch::makePrimaryPath(Node curNode) {
     }
 }
 
-std::pair<int, int> getDifference(Node &curNode, Node &nextNode) {
+std::pair<int, int> ISearch::getDifference(Node &curNode, Node &nextNode) {
     return {nextNode.i - curNode.i, nextNode.j - curNode.j};
 }
 

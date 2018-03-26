@@ -45,6 +45,9 @@ class ISearch
         bool breakTie(const Node &node1, const Node &node2);
         void calculate_distances(Node &curNode, const Map &map, const EnvironmentOptions &options);
         double stepLength(const Node &node1, const Node &node2);
+        bool check(int x, int y, int dx, int dy, const Map &map, const EnvironmentOptions &options);
+        bool compareByDistance(const Node &node1, const Node &node2);
+        std::pair<int, int> getDifference(Node &curNode, Node &nextNode);
 
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
