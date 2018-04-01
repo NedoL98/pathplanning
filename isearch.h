@@ -43,6 +43,9 @@ class ISearch
         void makeSecondaryPath();//Makes another type of path(sections or points)
         //Node resetParent(Node current, Node parent, const Map &map, const EnvironmentOptions &options) {return current;}//need for Theta*
         bool breakTie(const Node &node1, const Node &node2);
+        std::pair<int, int> getDifference(Node &curNode, Node &nextNode);
+        bool check(const Node &curNode, std::vector<int> dm, const Map &map, const EnvironmentOptions &options);
+        bool compareByDistance(const Node &node1, const Node &node2);
 
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;

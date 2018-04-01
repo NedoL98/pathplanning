@@ -16,6 +16,11 @@ ISearch::ISearch()
 ISearch::~ISearch(void) {}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
+
+    std::cout << "DIAGONAL: " << options.allowdiagonal << std::endl;
+    std::cout << "CORNERS: " << options.cutcorners << std::endl;
+    std::cout << "SQUEEZE: " << options.allowsqueeze << std::endl;
+
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //Lambda-functions as a comparator
@@ -36,7 +41,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     };
 
     std::set<Node, decltype(compareByDistance)> open(compareByDistance);
-    std::set<Node, decltype(compareByCell)> closed(compareByCell);
+    std::list<Node> closed;
 
     //Auxilary structure, that helps keeping only one copy of node in OPEN
     std::set<Node, decltype(compareByCell)> is_open(compareByCell);
@@ -51,6 +56,9 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     is_open.insert(startingNode);
 
     int step_counter = 0;
+    bool path_found = false;
+
+    double prev_dist = 0;
 
     while (!open.empty())
     {
@@ -59,17 +67,21 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
         open.erase(open.begin()); //Erase it from queue
 
-        closed.insert(curNode); //Mark it as a visited vertex
+        closed.push_back(curNode); //Mark it as a visited vertex
 
-        //curNode.print();
+        if (prev_dist < curNode.g) {
+            prev_dist = curNode.g;
+            //curNode.print();
+        }
 
         //Goalpoint reached
         if (curNode == goalNode) {
+            path_found = true;
             break;
         }
 
         //Pointer to an ancestor
-        auto curNode_ptr = closed.find(curNode);
+        auto curNode_ptr = --closed.end();
         const Node *ancestor_ptr = &(*curNode_ptr);
 
         //Finding successors for current node
@@ -101,8 +113,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     }
 
     //Making primary path
-    if (closed.count(goalNode)) {
-        makePrimaryPath(*closed.find(goalNode));
+    if (path_found) {
+        makePrimaryPath(closed.back());
     }
 
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -111,9 +123,9 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     //Making secondary path
     makeSecondaryPath();
 
-    sresult.pathfound = (closed.count(goalNode));
+    sresult.pathfound = path_found;
     if (sresult.pathfound) {
-        sresult.pathlength = closed.find(goalNode)->g;
+        sresult.pathlength = closed.back().g;
     }
     sresult.nodescreated = closed.size() + open.size();
     sresult.numberofsteps = step_counter;
@@ -123,20 +135,20 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     return sresult;
 }
 
-bool check(const Node &curNode, std::vector<int> dm, const Map &map, const EnvironmentOptions &options) {
+bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, const EnvironmentOptions &options) {
     //Zero movement case
     if (dm[0] == 0 and dm[1] == 0 and dm[2] == 0) {
         return false;
     }
 
     //Checking if possible to fly over an obstacle
-    if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) >= curNode.k + dm[2]) {
+    if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) > curNode.k + dm[2]) {
         return false;
     }
 
     //Checking if underneath the boundary
-    if (curNode.k + dm[2] > map.getMapMaxAlt()) {
-       return false;
+    if (map.getMapMaxAlt() != -1 and curNode.k + dm[2] > map.getMapMaxAlt()) {
+        return false;
     }
 
     if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != static_cast<int>(dm.size()) - 1) {
@@ -152,18 +164,18 @@ bool check(const Node &curNode, std::vector<int> dm, const Map &map, const Envir
             if (i == j or dm[i] == 0 or dm[j] == 0) {
                 continue;
             }
-            //dm[i] != 0 and dm[1] != 0
+            //dm[i] != 0 and dm[j] != 0
             int cnt = 0;
 
             cur_coord[i] -= dm[i];
             corner = Node(cur_coord);
             cur_coord[i] += dm[i];
-            cnt += (map.getValue(corner.i, corner.j) >= corner.k);
+            cnt += (map.getValue(corner.i, corner.j) > corner.k);
 
             cur_coord[j] -= dm[j];
             corner = Node(cur_coord);
             cur_coord[j] += dm[j];
-            cnt += (map.getValue(corner.i, corner.j) >= corner.k);
+            cnt += (map.getValue(corner.i, corner.j) > corner.k);
 
             if (!options.cutcorners and cnt > 0) {
                 return false;
@@ -201,8 +213,7 @@ double ISearch::computeHFromCellToCell(const Node &from, const Node &to, const E
     }
 }
 
-bool compareByDistance(const Node &node1,
-                       const Node &node2) {
+bool ISearch::compareByDistance(const Node &node1, const Node &node2) {
     if (node1.i != node2.i) {
         return node1.i < node2.i;
     } else if (node1.j != node2.j) {
@@ -258,7 +269,7 @@ void ISearch::makePrimaryPath(Node curNode) {
     }
 }
 
-std::pair<int, int> getDifference(Node &curNode, Node &nextNode) {
+std::pair<int, int> ISearch::getDifference(Node &curNode, Node &nextNode) {
     return {nextNode.i - curNode.i, nextNode.j - curNode.j};
 }
 

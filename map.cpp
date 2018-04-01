@@ -311,15 +311,21 @@ bool Map::getMap(const char *FileName)
     }
     if (!(hasFINX && hasFINY && hasSTX && hasSTY))
         return false;
+    if (!hasMaxAlt) {
+        std::cout << "Warning! There is no tag 'maxaltitude in xml-file!" << std::endl;
+        std::cout << "Using no height restriction!" << std::endl;
+        max_alt = -1;
+    }
+
 
     //Setting heights of start and goal points
-    start_k = Grid[start_i][start_j] + 1;
-    goal_k = Grid[goal_i][goal_j] + 1;
+    //start_k = Grid[start_i][start_j] + 1;
+    //goal_k = Grid[goal_i][goal_j] + 1;
+    start_k = Grid[start_i][start_j];
+    goal_k = Grid[goal_i][goal_j];
 
     return true;
 }
-
-
 
 int Map::getValue(int i, int j) const
 {
