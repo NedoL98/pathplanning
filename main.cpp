@@ -39,13 +39,12 @@ const int MAX_BUF = 4096;
 
 int main(int argc, char* argv[])
 {
-    std::cout << argc << std::endl;
     if(argc < 2) {
         std::cout<<"Error! Pathfinding task file (XML) is not specified!"<<std::endl;
         return 0;
     }
 
-    std::cout<<argv[1]<<std::endl;
+    std::cout<< argv[1] <<std::endl;
 
     DIR *dir = opendir(argv[1]);
 
@@ -53,6 +52,7 @@ int main(int argc, char* argv[])
         std::cout << "Directory detected" << std::endl;
         dirent *file;
         char buffer[MAX_BUF];
+        int map_proc = 0;
         while ((file = readdir(dir)) != NULL) {
             if (strcmp(file->d_name, ".") == 0 or strcmp(file->d_name, "..") == 0) {
                 continue;
@@ -60,7 +60,8 @@ int main(int argc, char* argv[])
             snprintf(buffer, MAX_BUF, "%s\\%s", argv[1], file->d_name);
             std::cout << buffer << std::endl;
             read_map(buffer);
-            //std::cout << file->d_name << std::endl;
+            ++map_proc;
+            std::cout << "Map processed: " << map_proc << std::endl;
         }
     }
     else {

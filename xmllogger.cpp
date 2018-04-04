@@ -145,6 +145,7 @@ void XmlLogger::writeToLogPath(const std::list<Node> &path)
         XMLElement *element = doc.NewElement(CNS_TAG_POINT);
         element->SetAttribute(CNS_TAG_ATTR_X, it->j);
         element->SetAttribute(CNS_TAG_ATTR_Y, it->i);
+        element->SetAttribute(CNS_TAG_ATTR_Z, it->k);
         element->SetAttribute(CNS_TAG_ATTR_NUM, iterate);
         lplevel->InsertEndChild(element);
         iterate++;
@@ -166,9 +167,11 @@ void XmlLogger::writeToLogHPpath(const std::list<Node> &hppath)
         part->SetAttribute(CNS_TAG_ATTR_NUM, partnumber);
         part->SetAttribute(CNS_TAG_ATTR_STX, it->j);
         part->SetAttribute(CNS_TAG_ATTR_STY, it->i);
+        part->SetAttribute(CNS_TAG_ATTR_STZ, it->k);
         ++iter;
         part->SetAttribute(CNS_TAG_ATTR_FINX, iter->j);
         part->SetAttribute(CNS_TAG_ATTR_FINY, iter->i);
+        part->SetAttribute(CNS_TAG_ATTR_FINZ, iter->k);
         part->SetAttribute(CNS_TAG_ATTR_LENGTH, iter->g - it->g);
         hplevel->LinkEndChild(part);
         ++it;

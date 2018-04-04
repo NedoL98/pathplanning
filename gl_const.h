@@ -55,6 +55,7 @@
     #define CNS_TAG_ATTR_TIME           "time"
     #define CNS_TAG_ATTR_X              "x"
     #define CNS_TAG_ATTR_Y              "y"
+    #define CNS_TAG_ATTR_Z              "z"
     #define CNS_TAG_ATTR_NUM            "number"
     #define CNS_TAG_ATTR_F              "F"
     #define CNS_TAG_ATTR_G              "g"
@@ -62,8 +63,10 @@
     #define CNS_TAG_ATTR_PARY           "parent_y"
     #define CNS_TAG_ATTR_STX            "start.x"
     #define CNS_TAG_ATTR_STY            "start.y"
+    #define CNS_TAG_ATTR_STZ            "start.z"
     #define CNS_TAG_ATTR_FINX           "finish.x"
     #define CNS_TAG_ATTR_FINY           "finish.y"
+    #define CNS_TAG_ATTR_FINZ           "finish.z"
 
 
 //Search Parameters

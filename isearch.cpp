@@ -16,10 +16,11 @@ ISearch::ISearch()
 ISearch::~ISearch(void) {}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
-
+    /*
     std::cout << "DIAGONAL: " << options.allowdiagonal << std::endl;
     std::cout << "CORNERS: " << options.cutcorners << std::endl;
     std::cout << "SQUEEZE: " << options.allowsqueeze << std::endl;
+    */
 
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
@@ -141,6 +142,12 @@ bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, co
         return false;
     }
 
+    //Out of bounds
+    if (curNode.i + dm[0] < 0 or curNode.i + dm[0] >= map.getMapWidth() or
+        curNode.j + dm[1] < 0 or curNode.j + dm[1] >= map.getMapHeight()) {
+        return false;
+    }
+
     //Checking if possible to fly over an obstacle
     if (map.getValue(curNode.i + dm[0], curNode.j + dm[1]) > curNode.k + dm[2]) {
         return false;
@@ -151,11 +158,10 @@ bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, co
         return false;
     }
 
+    //Check diagonal moves
     if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != static_cast<int>(dm.size()) - 1) {
         return false;
     }
-
-    //This should be rewritten for more complex 3d maps
 
     Node corner;
     std::vector<int> cur_coord = {curNode.i + dm[0], curNode.j + dm[1], curNode.k + dm[2]};
@@ -213,7 +219,7 @@ double ISearch::computeHFromCellToCell(const Node &from, const Node &to, const E
     }
 }
 
-bool ISearch::compareByDistance(const Node &node1, const Node &node2) {
+bool ISearch::compareByCoordinate(const Node &node1, const Node &node2) {
     if (node1.i != node2.i) {
         return node1.i < node2.i;
     } else if (node1.j != node2.j) {
@@ -225,12 +231,12 @@ bool ISearch::compareByDistance(const Node &node1, const Node &node2) {
 bool ISearch::breakTie(const Node &node1, const Node &node2) {
     if (breakingties == CN_SP_BT_GMAX) {
         if (node1.g == node2.g) {
-            return compareByDistance(node1, node2);
+            return compareByCoordinate(node1, node2);
         }
         return node1.g > node2.g;
     } else { //breakingties == CN_SP_BT_GMIN
         if (node1.g == node2.g) {
-            return compareByDistance(node1, node2);
+            return compareByCoordinate(node1, node2);
         }
         return node1.g < node2.g;
     }
@@ -269,13 +275,17 @@ void ISearch::makePrimaryPath(Node curNode) {
     }
 }
 
-std::pair<int, int> ISearch::getDifference(Node &curNode, Node &nextNode) {
-    return {nextNode.i - curNode.i, nextNode.j - curNode.j};
+std::vector<int> ISearch::getDifference(Node &curNode, Node &nextNode) {
+    std::vector<int> ret;
+    ret.push_back(nextNode.i - curNode.i);
+    ret.push_back(nextNode.j - curNode.j);
+    ret.push_back(nextNode.k - curNode.k);
+    return ret;
 }
 
 void ISearch::makeSecondaryPath() {
     auto nodePtr = lppath.begin();
-    std::pair<int, int> previousDifference({0, 0}); //Probably better to make a bool flag
+    std::vector<int> previousDifference(3, 0);
 
     while (nodePtr != lppath.end()) {
         auto nextPtr = nodePtr;
@@ -284,7 +294,13 @@ void ISearch::makeSecondaryPath() {
             hppath.push_back(*nodePtr);
         } else {
             auto newDifference = getDifference(*nodePtr, *nextPtr);
-            if (previousDifference != newDifference) {
+            bool same = true;
+            for (int i = 0; i < 3; ++i) {
+                if (previousDifference[i] != newDifference[i]) {
+                    same = false;
+                }
+            }
+            if (!same) {
                 hppath.push_back(*nodePtr);
                 previousDifference = newDifference;
             }
