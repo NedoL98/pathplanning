@@ -128,6 +128,12 @@ bool ISearch::check(int x, int y, int dx, int dy, const Map &map, const Environm
     {
         return false;
     }
+    //Out of bounds
+    if (x + dx < 0 or x + dx >= map.getMapWidth() or
+        y + dy < 0 or y + dy >= map.getMapHeight())
+    {
+        return false;
+    }
     if (map.getValue(x + dx, y + dy) != 0) //New vertex must be free
     {
         return false;
