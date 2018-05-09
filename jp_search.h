@@ -9,7 +9,7 @@ public:
     ~JP_Search();
 
 private:
-    std::list<Node> findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options);
+    std::list<Node> findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options);
     void makePrimaryPath(Node curNode);
     void makeSecondaryPath();
 };

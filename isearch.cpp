@@ -209,9 +209,7 @@ std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, con
                 Node newNode;
                 newNode.i = curNode.i + dx;
                 newNode.j = curNode.j + dy;
-                //newNode.g = curNode.g + computeHFromCellToCell(curNode.i, curNode.j, newNode.i, newNode.j, options);
-                //newNode.H = computeHFromCellToCell(newNode.i, newNode.j, xEnd, yEnd, options);
-                //newNode.F = newNode.g + hweight * newNode.H;
+                //Distance calculation is implemented in another function
                 successors.push_back(newNode);
             }
         }
