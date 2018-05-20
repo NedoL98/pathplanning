@@ -14,6 +14,7 @@
 
 struct Node
 {
+    int     ret_value = 0;
     int     i, j; //grid cell coordinates
     double  F, g, H; //f-, g- and h-values of the search node
     const Node *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-value of the current node)
@@ -49,6 +50,8 @@ struct Node
         std::cout << "G value: " << g << std::endl;
         std::cout << "H value: " << H << std::endl;
     }
+
+    ~Node() {}
 };
 
 #endif

@@ -1,27 +1,32 @@
+#include <exception>
+#include <functional>
+#include <random>
 #include "jp_search.h"
 
 JP_Search::~JP_Search()
 {
 }
 
-Node *jump(const Node *curNode, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
+Node jump(const Node &curNode, int dx, int dy, const Map &map, const EnvironmentOptions &options) {
     //Distance calculation is implemented in another function
-    Node *nextNode = new Node(curNode->i + dx, curNode->j + dy);
+    Node nextNode = Node(curNode.i + dx, curNode.j + dy);
 
     //If can't go
-    if (map.getValue(nextNode->i, nextNode->j) != 0) {
-        return nullptr;
-    }
-
-    //GoalPoint
-    if (map.getGoalPoint().first == nextNode->i and
-            map.getGoalPoint().second == nextNode->j) {
+    if (map.getValue(nextNode.i, nextNode.j) != 0) {
+        nextNode.ret_value = -1;
         return nextNode;
     }
 
     //Zero movement case
     if (dx == 0 and dy == 0) {
-        return nullptr;
+        nextNode.ret_value = -1;
+        return nextNode;
+    }
+
+    //GoalPoint
+    if (map.getGoalPoint().first == nextNode.i and
+            map.getGoalPoint().second == nextNode.j) {
+        return nextNode;
     }
 
     /*
@@ -30,33 +35,36 @@ Node *jump(const Node *curNode, int dx, int dy, const Map &map, const Environmen
         return nullptr;
     }
     */
-
+    /*
     if (dx != 0 and dy != 0) {
-        int obstaclesCount = (map.getValue(curNode->i + dx, curNode->j) == 1) +
-                (map.getValue(curNode->i, curNode->j + dy) == 1);
+        int obstaclesCount = (map.getValue(curNode.i + dx, curNode.j) != 0) +
+                (map.getValue(curNode.i, curNode.j + dy) != 0);
         if (obstaclesCount >= 1 and !options.cutcorners) {
-            return nullptr;
+            nextNode.ret_value = -1;
+            return nextNode;
         }
         if (obstaclesCount == 2 and !options.allowsqueeze) {
-            return nullptr;
+            nextNode.ret_value = -1;
+            return nextNode;
         }
     }
-
-
+    */
 
     //Diagonal case
     if (dx != 0 and dy != 0) {
         //Checking enforced neighbours
-        if (map.getValue(nextNode->i - dx, nextNode->j) == 1) {
+        if (map.getValue(nextNode.i - dx, nextNode.j) == 1) {
             return nextNode;
         }
-        if (map.getValue(nextNode->i, nextNode->j - dy) == 1) {
+        if (map.getValue(nextNode.i, nextNode.j - dy) == 1) {
             return nextNode;
         }
 
         //Trying to expand horizontally or vertically
-        if (jump(nextNode, dx, 0, map, options) != nullptr or
-                jump(nextNode, 0, dy, map, options) != nullptr) {
+        if (jump(nextNode, dx, 0, map, options).ret_value == 0) {
+            return nextNode;
+        }
+        if (jump(nextNode, 0, dy, map, options).ret_value == 0) {
             return nextNode;
         }
     }
@@ -64,19 +72,19 @@ Node *jump(const Node *curNode, int dx, int dy, const Map &map, const Environmen
     else {
         //Horizontal case
         if (dx != 0) {
-            if (map.getValue(curNode->i, curNode->j - 1) == 1) {
+            if (map.getValue(nextNode.i, nextNode.j - 1) == 1) {
                 return nextNode;
             }
-            if (map.getValue(curNode->i, curNode->j + 1) == 1) {
+            if (map.getValue(nextNode.i, nextNode.j + 1) == 1) {
                 return nextNode;
             }
         }
         //Vertical case
         else {
-            if (map.getValue(curNode->i - 1, curNode->j) == 1) {
+            if (map.getValue(nextNode.i - 1, nextNode.j) == 1) {
                 return nextNode;
             }
-            if (map.getValue(curNode->i + 1, curNode->j) == 1) {
+            if (map.getValue(nextNode.i + 1, nextNode.j) == 1) {
                 return nextNode;
             }
         }
@@ -89,9 +97,9 @@ std::list<Node> JP_Search::findSuccessors(const Node &curNode, const Map &map, c
     std::list<Node> successors;
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
-            Node *jumpPoint = jump(&curNode, dx, dy, map, options);
-            if (jumpPoint != nullptr) {
-                successors.push_back(*jumpPoint);
+            Node jumpPoint = jump(curNode, dx, dy, map, options);
+            if (jumpPoint.ret_value != -1) {
+                successors.push_back(jumpPoint);
             }
         }
     }

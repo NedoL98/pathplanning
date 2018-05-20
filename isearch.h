@@ -3,6 +3,7 @@
 #include "ilogger.h"
 #include "searchresult.h"
 #include "environmentoptions.h"
+#include <exception>
 #include <list>
 #include <vector>
 #include <math.h>

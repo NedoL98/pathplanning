@@ -201,8 +201,6 @@ bool ISearch::breakTie(const Node &node1, const Node &node2) {
 
 std::list<Node> ISearch::findSuccessors(const Node &curNode, const Map &map, const EnvironmentOptions &options) {
     std::list<Node> successors;
-    int xEnd = map.getGoalPoint().first;
-    int yEnd = map.getGoalPoint().second;
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
             if (check(curNode.i, curNode.j, dx, dy, map, options)) {
