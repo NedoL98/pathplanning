@@ -1,3 +1,5 @@
+#include <gl_const.h>
+
 #ifndef NODE_H
 #define NODE_H
 
@@ -14,7 +16,7 @@
 
 struct Node
 {
-    int     ret_value = 0;
+    int     ret_value = CNS_REGULAR_NODE;
     int     i, j; //grid cell coordinates
     double  F, g, H; //f-, g- and h-values of the search node
     const Node *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-value of the current node)

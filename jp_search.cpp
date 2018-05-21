@@ -13,19 +13,20 @@ Node jump(const Node &curNode, int dx, int dy, const Map &map, const Environment
 
     //If can't go
     if (map.getValue(nextNode.i, nextNode.j) != 0) {
-        nextNode.ret_value = -1;
+        nextNode.ret_value = CNS_NO_NODE_FOUND;
         return nextNode;
     }
 
     //Zero movement case
     if (dx == 0 and dy == 0) {
-        nextNode.ret_value = -1;
+        nextNode.ret_value = CNS_NO_NODE_FOUND;
         return nextNode;
     }
 
     //GoalPoint
     if (map.getGoalPoint().first == nextNode.i and
             map.getGoalPoint().second == nextNode.j) {
+        nextNode.ret_value = CNS_NEXT_TO_GOAL;
         return nextNode;
     }
 

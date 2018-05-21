@@ -135,5 +135,10 @@
     #define CNS_OTHER_PATHSELECTION     "*"
     #define CNS_OTHER_MATRIXSEPARATOR   ' '
 
+    #define CNS_NO_NODE_FOUND           -1
+    #define CNS_REGULAR_NODE            0
+    #define CNS_NEXT_TO_GOAL            1
+    #define CNS_INF                     1000 * 1000 * 1000
+
 #endif
 

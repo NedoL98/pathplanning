@@ -14,7 +14,10 @@ ISearch::ISearch()
 
 ISearch::~ISearch(void) {}
 
-SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
+SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, EnvironmentOptions &options) {
+    options.allowdiagonal = 1;
+    options.allowsqueeze = 1;
+    options.cutcorners = 1;
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //Lambda-functions as a comparator
@@ -259,9 +262,12 @@ void ISearch::calculate_distances(Node &curNode, const Map &map, const Environme
     const Node *parent = curNode.parent;
 
     curNode.g = 0;
-    curNode.H = computeHFromCellToCell(curNode.i, curNode.j, xEnd, yEnd, options);
     if (curNode.parent != nullptr) {
         curNode.g = curNode.parent->g + stepLength(curNode, *parent);
+    }
+    curNode.H = computeHFromCellToCell(curNode.i, curNode.j, xEnd, yEnd, options);
+    if (curNode.ret_value == CNS_NEXT_TO_GOAL) {
+        curNode.H = -CNS_INF;
     }
     curNode.F = curNode.g + hweight * curNode.H;
 }
