@@ -159,35 +159,34 @@ bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, co
     }
 
     //Check diagonal moves
-    if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != static_cast<int>(dm.size()) - 1) {
+    if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != 1) {
         return false;
     }
 
-    Node corner;
-    std::vector<int> cur_coord = {curNode.i + dm[0], curNode.j + dm[1], curNode.k + dm[2]};
+    //Descend/Ascend check
+    if (!options.cutcorners and dm[2] != 0 and ((curNode.k == map.getValue(curNode.i, curNode.j)) or
+            (curNode.k + dm[2] == map.getValue(curNode.i + dm[0], curNode.j + dm[1])))) {
+        return false;
+    }
+
     for (int i = 0; i < static_cast<int>(dm.size()); ++i) {
-        for (int j = 0; j < static_cast<int>(dm.size()); ++j) {
-            if (i == j or dm[i] == 0 or dm[j] == 0) {
+        for (int j = i + 1; j < static_cast<int>(dm.size()); ++j) {
+            if (dm[i] == 0 or dm[j] == 0) {
                 continue;
             }
             //dm[i] != 0 and dm[j] != 0
-            int cnt = 0;
 
-            cur_coord[i] -= dm[i];
-            corner = Node(cur_coord);
-            cur_coord[i] += dm[i];
-            cnt += (map.getValue(corner.i, corner.j) > corner.k);
-
-            cur_coord[j] -= dm[j];
-            corner = Node(cur_coord);
-            cur_coord[j] += dm[j];
-            cnt += (map.getValue(corner.i, corner.j) > corner.k);
-
-            if (!options.cutcorners and cnt > 0) {
+            //Allowsqueeze check
+            int min_nh = std::min(map.getValue(curNode.i + dm[0], curNode.j),
+                    map.getValue(curNode.i, curNode.j + dm[1]));
+            if (!options.allowsqueeze and min_nh > std::max(curNode.k, curNode.k + dm[2])) {
                 return false;
             }
 
-            if (!options.allowsqueeze and cnt > 1) {
+            //Cutcorners check
+            if (!options.cutcorners and
+                    (std::min(curNode.k, curNode.k + dm[2]) < map.getValue(curNode.i + dm[0], curNode.j)) or
+                    std::min(curNode.k, curNode.k + dm[2]) < map.getValue(curNode.i, curNode.j + dm[1])) {
                 return false;
             }
         }
