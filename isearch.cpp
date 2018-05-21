@@ -14,10 +14,7 @@ ISearch::ISearch()
 
 ISearch::~ISearch(void) {}
 
-SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, EnvironmentOptions &options) {
-    options.allowdiagonal = 1;
-    options.allowsqueeze = 1;
-    options.cutcorners = 1;
+SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //Lambda-functions as a comparator
