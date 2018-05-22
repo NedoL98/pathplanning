@@ -16,12 +16,6 @@ ISearch::ISearch()
 ISearch::~ISearch(void) {}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
-    /*
-    std::cout << "DIAGONAL: " << options.allowdiagonal << std::endl;
-    std::cout << "CORNERS: " << options.cutcorners << std::endl;
-    std::cout << "SQUEEZE: " << options.allowsqueeze << std::endl;
-    */
-
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //Lambda-functions as a comparator
@@ -49,9 +43,6 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     Node goalNode = Node(map.getGoalPoint());
     Node startingNode = Node(map.getStartingPoint());
-
-    //std::cout << startingNode.i << " " << startingNode.j << " " << startingNode.k << " " << std::endl;
-    //std::cout << goalNode.i << " " << goalNode.j << " " << goalNode.k << " " << std::endl;
 
     open.insert(startingNode);
     is_open.insert(startingNode);
@@ -162,13 +153,13 @@ bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, co
     if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != 1) {
         return false;
     }
-
+    /*
     //Descend/Ascend check
     if (!options.cutcorners and dm[2] != 0 and ((curNode.k == map.getValue(curNode.i, curNode.j)) or
             (curNode.k + dm[2] == map.getValue(curNode.i + dm[0], curNode.j + dm[1])))) {
         return false;
     }
-
+    */
     for (int i = 0; i < static_cast<int>(dm.size()); ++i) {
         for (int j = i + 1; j < static_cast<int>(dm.size()); ++j) {
             if (dm[i] == 0 or dm[j] == 0) {

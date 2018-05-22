@@ -54,7 +54,8 @@ int main(int argc, char* argv[])
         char buffer[MAX_BUF];
         int map_proc = 0;
         while ((file = readdir(dir)) != NULL) {
-            if (strcmp(file->d_name, ".") == 0 or strcmp(file->d_name, "..") == 0) {
+            if (strcmp(file->d_name, ".") == 0 or strcmp(file->d_name, "..") == 0
+                    or std::string(file->d_name).find("_log.xml") != std::string::npos) {
                 continue;
             }
             snprintf(buffer, MAX_BUF, "%s\\%s", argv[1], file->d_name);
@@ -68,4 +69,3 @@ int main(int argc, char* argv[])
         read_map(argv[1]);
     }
 }
-
