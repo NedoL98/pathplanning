@@ -153,13 +153,17 @@ bool ISearch::check(const Node &curNode, std::vector<int> dm, const Map &map, co
     if (!options.allowdiagonal and std::count(dm.begin(), dm.end(), 0) != 1) {
         return false;
     }
-    /*
+
     //Descend/Ascend check
-    if (!options.cutcorners and dm[2] != 0 and ((curNode.k == map.getValue(curNode.i, curNode.j)) or
-            (curNode.k + dm[2] == map.getValue(curNode.i + dm[0], curNode.j + dm[1])))) {
-        return false;
+    if (!options.cutcorners and dm[2] != 0) {
+        if (dm[2] == -1 and curNode.k == map.getValue(curNode.i, curNode.j)) {
+            return false;
+        }
+        if (dm[2] == 1 and curNode.k + dm[2] == map.getValue(curNode.i + dm[0], curNode.j + dm[1])) {
+            return false;
+        }
     }
-    */
+
     for (int i = 0; i < static_cast<int>(dm.size()); ++i) {
         for (int j = i + 1; j < static_cast<int>(dm.size()); ++j) {
             if (dm[i] == 0 or dm[j] == 0) {
